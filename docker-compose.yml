@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  database:
+    image: postgres:${POSTGRES_VERSION:-13}-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-perudo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-perudo}
+      POSTGRES_USER: ${POSTGRES_USER:-perudo}
+    ports:
+      - 5432:5432
