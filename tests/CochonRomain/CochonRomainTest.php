@@ -6,6 +6,7 @@ namespace App\Tests\CochonRomain;
 use App\CochonRomain\Animal;
 use App\CochonRomain\Cochon;
 use App\CochonRomain\Romain;
+use App\CochonRomain\SacDeNourriture;
 use App\CochonRomain\Vache;
 use Monolog\Test\TestCase;
 

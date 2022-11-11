@@ -21,4 +21,12 @@ class Romain extends Animal
     {
         $this->name = $name;
     }
+
+    public function feed(Consommable $weed) : void{
+
+        if($weed instanceof SacdeWeed) {
+            $this->estfeed = true;
+        }
+
+    }
 }
