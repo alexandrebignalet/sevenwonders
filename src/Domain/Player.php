@@ -3,106 +3,103 @@
 namespace App\Domain;
 
 use App\Domain\Card\Card;
+use App\Domain\Card\CardAction;
+use App\Domain\Card\CardType;
+use App\Domain\Wonder\Neighbourhood;
 use App\Domain\Wonder\Wonder;
-use App\Domain\Wonder\WonderType;
 use JetBrains\PhpStorm\Pure;
 
-class Player {
-
-
-    private int $id;
-    private int $coins;
-    private Wonder $wonder;
-    private Hand $hand;
-    private ?string $selectionAction;
-    /**
-     * @var Player[] $neighbours
-     */
-    private array $neighbours;
+class Player
+{
+    public readonly int $id;
+    public readonly Wonder $wonder;
+    public readonly Hand $hand;
+    public readonly ?CardAction $selectedAction;
 
     /**
      * @param int $userId
      * @param Age $age
-     * @param Player[] $neighbours
+     * @param Wonder $wonder
      * @return Player
      */
-    #[Pure] static function initialize(int $userId, Age $age, Wonder $wonder): Player {
-        return new Player($userId, 3, $wonder, $age->distributeHand(), null);
+    #[Pure] static function initialize(int $userId, Age $age, Wonder $wonder): Player
+    {
+        return new Player($userId, $wonder, Hand::build($age->distributeHand()), null);
     }
 
     /**
      * @param int $id
-     * @param int $coins
      * @param Wonder $wonder
-     * @param Card[] $hand
-     * @param string|null $selectionAction
-     * @param Player[] $neighbours
+     * @param Hand $hand
+     * @param CardAction|null $selectionAction
      */
-    private function __construct(int $id, int $coins, Wonder $wonder, Hand $hand, ?string $selectionAction)
+    private function __construct(int $id, Wonder $wonder, Hand $hand, ?CardAction $selectionAction)
     {
         $this->id = $id;
-        $this->coins = $coins;
         $this->wonder = $wonder;
         $this->hand = $hand;
-        $this->selectionAction = $selectionAction;
+        $this->selectedAction = $selectionAction;
     }
 
     /**
      * @throws GameException
      */
-    public function play(string $cardName, string $action)
+    public function play(Neighbourhood $neighbourhood, string $cardName, string $action, ?string $tradeId): Player
     {
-        $card = $this->hand->findCard($cardName);
-        $cardAction = CardAction::of($card, $action);
-    }
-
-    public function id(): int
-    {
-        return $this->id;
-    }
-
-    public function coins(): int
-    {
-        return $this->coins;
-    }
-
-    public function wonder(): Wonder
-    {
-        return $this->wonder;
+        $cardAction = $this->hand->validate($this->wonder, $neighbourhood, $cardName, $action, $tradeId);
+        return new Player($this->id, $this->wonder, $this->hand, $cardAction);
     }
 
     /**
-     * @return Hand
+     * @return Player
+     * @throws \Exception
      */
-    public function hand(): Hand
+    public function commit(): Player
     {
-        return $this->hand;
-    }
-
-    public function selectedAction(): ?string
-    {
-        return $this->selectionAction;
+        return new Player(
+            $this->id,
+            $this->wonder->build($this->selectedAction),
+            $this->hand->take($this->selectedAction),
+            null
+        );
     }
 
     /**
-     * @return Player[]
+     * @param Card[] $cards
+     * @return Player
      */
-    public function neighbours(): array
+    public function receives(array $cards): Player
     {
-        return $this->neighbours;
+        return new Player(
+            $this->id,
+            $this->wonder,
+            Hand::build($cards),
+            $this->selectedAction
+        );
     }
 
     /**
-     * @param Player[] $neighbours
-     * @return void
+     * @return array{ player: Player, card: CardType }
      */
-    public function setNeighbours(array $neighbours)
+    public function discardLastCard(): array
     {
-        $this->neighbours = $neighbours;
+        $result = $this->hand->takeLast();
+        $player = new Player(
+            $this->id,
+            $this->wonder,
+            $result['hand'],
+            $this->selectedAction
+        );
+        return ['player' => $player, 'card' => $result['card']];
     }
 
-    public function structures(): array
+    public function unbury(CardType $cardType)
     {
-        return $this->wonder->structures();
+        return new Player(
+            $this->id,
+            $this->wonder->build(new CardAction($cardType, Action::BUILD_STRUCTURE)),
+            $this->hand,
+            null
+        );
     }
 }

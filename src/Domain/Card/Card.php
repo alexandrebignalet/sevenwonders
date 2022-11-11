@@ -2,48 +2,18 @@
 
 namespace App\Domain\Card;
 
-class Card {
-    private int $points;
-    private int $warPoints;
-    private CardType $type;
-//    private int $resource;
-//    private Cost $cost;
-//    private ScientificSymbol $symbol;
+use App\Domain\Resource\Resources;
 
-    public function __construct(CardType $type)
+class Card
+{
+    public readonly CardType $type;
+    public readonly Cost $cost;
+    public readonly Resources $resources;
+
+    public function __construct(CardType $type, ?Cost $cost = null, ?Resources $resources = null)
     {
         $this->type = $type;
-    }
-
-
-    function type(): CardType
-    {
-        return $this->type;
+        $this->cost = $cost === null ? Cost::free() : $cost;
+        $this->resources = $resources === null ? Resources::empty() : $resources;
     }
 }
-//
-//enum ScientificSymbol {
-//    case ROUE;
-//    case COMPAS;
-//    case TABLETTE;
-//}
-//
-//class Cost {
-//    private int $coins;
-//    private int $clay;
-//    private int $terre;
-//    private int $iron;
-//    private int $wood;
-//    private int $papyrus;
-//    private int $flotte;
-//    private int $papier;
-//    private array $chain;
-//
-//}
-//
-//class CardResources {
-//
-//    function canAfford() {
-//
-//    }
-//}

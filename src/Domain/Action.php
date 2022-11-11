@@ -8,6 +8,9 @@ enum Action: string
     case BUILD_STAGE = "BUILD_STAGE";
     case DISCARD = "DISCARD";
 
+    /**
+     * @throws GameException
+     */
     public static function of(string $action): Action
     {
         foreach (Action::cases() as $case) {
@@ -15,6 +18,7 @@ enum Action: string
                 return $case;
             }
         }
+
         throw GameExceptionType::UNKNOWN_ACTION->exception();
     }
 }

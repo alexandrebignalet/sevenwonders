@@ -2,87 +2,109 @@
 
 namespace App\Domain;
 
+use App\Domain\PlayCard\PlayCardStrategy;
+use App\Domain\PlayCard\Strategy;
+use App\Domain\Wonder\Wonder;
+use App\Domain\Wonder\WonderFace;
 use App\Domain\Wonder\WonderType;
 use JetBrains\PhpStorm\Pure;
 
-class SevenWonders {
+class SevenWonders
+{
+    public readonly int $id;
+
+    public readonly Strategy $state;
 
 
-    private int $id;
-    private Age $age;
-    /**
-     * @var Player[]
-     */
-    private array $players;
-
-
-    #[Pure] static function start(int $roomId, array $userIds, bool $shuffle = true): SevenWonders {
-        $wonders = WonderType::cases();
-        if ($shuffle) shuffle($wonders);
-
-        $age = Age::first(count($userIds), $shuffle);
-        $players = array_map(fn(int $userId): Player => Player::initialize($userId, $age, array_pop($wonders)->wonder()), $userIds);
-        self::setupNeighbourhood($players);
-        return new SevenWonders($roomId, $age, $players);
-    }
-
-    /**
-     * @param Player[] $players
-     * @return void
-     */
-    public static function setupNeighbourhood(array $players): void
+    #[Pure] static function start(int $roomId, array $userIds, bool $shuffle = true, ?array $availableWonderTypes = null, ?array $availableWonderFaces = null): SevenWonders
     {
-        $playersCount = count($players);
+        $playersCount = count($userIds);
+        $wonders = self::setupWonders($playersCount, $shuffle, $availableWonderTypes, $availableWonderFaces);
+        $age = Age::first($playersCount, $shuffle);
+
+        $userWonders = [];
         for ($i = 0; $i < $playersCount; $i++) {
-            $leftNeighbour = $players[$i === 0 ? $playersCount - 1 : $i - 1];
-            $rightNeighbour = $players[$i === $playersCount - 1 ? 0 : $i + 1];
-            $players[$i]->setNeighbours([$leftNeighbour, $rightNeighbour]);
+            $userWonders[] = [$userIds[$i], $wonders[$i]];
         }
+
+        $players = array_map(function (array $userWonder) use ($age): Player {
+            $userId = $userWonder[0];
+            $wonder = $userWonder[1];
+
+            return Player::initialize($userId, $age, $wonder);
+        }, $userWonders);
+
+        return new SevenWonders($roomId, new PlayCardStrategy($age, $players, []));
     }
 
     /**
+     * @param bool $shuffle
+     * @return Wonder[]
+     */
+    public static function setupWonders(int $playersCount, bool $shuffle, ?array $availableWonderTypes = null, ?array $availableWonderFaces = null): array
+    {
+        $wonderTypes = $availableWonderTypes !== null ? $availableWonderTypes : WonderType::cases();
+        $wonderFaces = $availableWonderFaces !== null ? $availableWonderFaces : WonderFace::cases();
+        if ($shuffle) {
+            shuffle($wonderTypes);
+            shuffle($wonderFaces);
+        }
+        $gameWondersType = array_chunk($wonderTypes, $playersCount)[0];
+
+        return array_map(fn(WonderType $type): Wonder => $type->wonder($wonderFaces[0]), $gameWondersType);
+    }
+
+    /**
+     * @param int $userId
+     * @param string $cardName
+     * @param string $action
+     * @param string|null $tradeId
+     * @return SevenWonders
      * @throws GameException
      */
-    public function playCard(int $userId, string $cardName, string $action)
+    public function playCard(int $userId, string $cardName, string $action, ?string $tradeId = null): SevenWonders
     {
-            $player = $this->findPlayer($userId);
-            $player->play($cardName, $action);
+        $player = $this->findPlayer($userId);
+        $state = $this->state->play($player, $cardName, $action, $tradeId);
+        return new SevenWonders($this->id, $state);
     }
 
-    public function __construct(int $id, Age $age, array $userIds)
+    /**
+     * @param int $id
+     * @param Strategy $state
+     */
+    public function __construct(int $id, Strategy $state)
     {
         $this->id = $id;
-        $this->age = $age;
-        $this->players = $userIds;
-    }
-
-    public function id(): int
-    {
-        return $this->id;
+        $this->state = $state;
     }
 
     public function age(): Age
     {
-        return $this->age;
+        return $this->state->age();
     }
 
     public function players(): array
     {
-        return $this->players;
+        return $this->state->players();
+    }
+
+    public function discard(): array
+    {
+        return $this->state->discard();
     }
 
     /**
      * @throws GameException
      */
-    private function findPlayer(int $userId): Player
+    public function findPlayer(int $userId): Player
     {
-        foreach ($this->players as $player) {
-            if ($player->id() === $userId) {
+        foreach ($this->players() as $player) {
+            if ($player->id === $userId) {
                 return $player;
             }
         }
+
         throw GameExceptionType::PLAYER_NOT_FOUND->exception();
     }
-
-
 }
