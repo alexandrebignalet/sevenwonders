@@ -7,7 +7,6 @@ use App\Domain\PlayCard\Strategy;
 use App\Domain\Wonder\Wonder;
 use App\Domain\Wonder\WonderFace;
 use App\Domain\Wonder\WonderType;
-use JetBrains\PhpStorm\Pure;
 
 class SevenWonders
 {
@@ -16,7 +15,7 @@ class SevenWonders
     public readonly Strategy $state;
 
 
-    #[Pure] static function start(int $roomId, array $userIds, bool $shuffle = true, ?array $availableWonderTypes = null, ?array $availableWonderFaces = null): SevenWonders
+    static function start(int $roomId, array $userIds, bool $shuffle = true, ?array $availableWonderTypes = null, ?array $availableWonderFaces = null): SevenWonders
     {
         $playersCount = count($userIds);
         $wonders = self::setupWonders($playersCount, $shuffle, $availableWonderTypes, $availableWonderFaces);

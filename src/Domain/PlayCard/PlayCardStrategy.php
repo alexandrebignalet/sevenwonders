@@ -2,6 +2,7 @@
 
 namespace App\Domain\PlayCard;
 
+use App\Domain\Action;
 use App\Domain\GameException;
 use App\Domain\Player;
 use App\Domain\RotationDirectionFlow;
@@ -22,9 +23,25 @@ class PlayCardStrategy extends Strategy
             return new PlayCardStrategy($this->age, $players, $this->discard);
         }
 
-        $committedPlayers = array_map(fn(Player $player) => $player->commit(), $players);
+
+        $committedPlayers = array_map(function (Player $player) {
+            list('cardAction' => $cardAction, 'player' => $player) = $player->commit();
+
+            if ($cardAction->action() === Action::DISCARD) {
+                $this->discard[] = $cardAction->cardType();
+            }
+
+            return $player;
+        }, $players);
+
+
+        $haliPlayer = $this->hasPowerToPlay($committedPlayers, WonderPowerType::UNBURY_CARD);
 
         if (!$this->isAgeOver($committedPlayers)) {
+            if (isset($haliPlayer) && count($this->discard) > 0) {
+                return new HalikarnassosPowerStrategy($haliPlayer, $this->age, $committedPlayers, $this->discard);
+            }
+
             $rotatedHandPlayers = $this->rotatePlayersHand($committedPlayers);
             return new PlayCardStrategy($this->age, $rotatedHandPlayers, $this->discard);
         }
@@ -36,7 +53,6 @@ class PlayCardStrategy extends Strategy
 
         $endOfAgeDiscard = array_map(fn(Player $player) => $player->discardLastCard()['card'], $committedPlayers);
 
-        $haliPlayer = $this->hasPowerToPlay($committedPlayers, WonderPowerType::UNBURY_CARD);
         if (isset($haliPlayer)) {
             return new HalikarnassosPowerStrategy($haliPlayer, $this->age, $committedPlayers, $endOfAgeDiscard);
         }
@@ -90,19 +106,5 @@ class PlayCardStrategy extends Strategy
         }
 
         return $rotated;
-    }
-
-    /**
-     * @param Player[] $committedPlayers
-     * @return Player | null
-     */
-    private function hasPowerToPlay(array $committedPlayers, WonderPowerType $powerType): ?Player
-    {
-        foreach ($committedPlayers as $player) {
-            if ($player->wonder->hasPowerToPlay($powerType)) {
-                return $player;
-            }
-        }
-        return null;
     }
 }

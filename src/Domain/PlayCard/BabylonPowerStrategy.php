@@ -2,12 +2,15 @@
 
 namespace App\Domain\PlayCard;
 
+use App\Domain\Action;
 use App\Domain\Age;
+use App\Domain\Card\CardAction;
 use App\Domain\Card\CardType;
 use App\Domain\GameException;
 use App\Domain\GameExceptionType;
 use App\Domain\Player;
 use App\Domain\Wonder\Neighbourhood;
+use App\Domain\Wonder\WonderPowerType;
 use JetBrains\PhpStorm\Pure;
 
 class BabylonPowerStrategy extends Strategy
@@ -38,13 +41,31 @@ class BabylonPowerStrategy extends Strategy
             throw GameExceptionType::CARD_PLAY_NOT_ALLOWED->exception();
         }
 
-        $babylon = $this->babylonPlayer
+        /**
+         * @var CardAction $cardAction
+         * @var Player $player
+         */
+        list('cardAction' => $cardAction, 'player' => $babylon) = $this->babylonPlayer
             ->play($this->neighbourhood(), $cardName, $action, $tradeId)
             ->commit();
 
+        if ($cardAction->action() === Action::DISCARD) {
+            $this->discard[] = $cardAction->cardType();
+        }
+
         $nextAge = $this->age->next();
         $players = array_map(fn(Player $player) => $player->id === $babylon->id ? $babylon : $player, $this->players);
-        return new PlayCardStrategy($nextAge, $players, $this->discard);
+        $playersLastCard = array_filter(array_map(fn(Player $player) => $player->discardLastCard()['card'], $players), fn(?CardType $cardType) => $cardType !== null);
+
+
+        $haliPlayer = $this->hasPowerToPlay($players, WonderPowerType::UNBURY_CARD);
+        $endOfAgeDiscard = array_merge($this->discard, $playersLastCard);
+
+        if (isset($haliPlayer)) {
+            return new HalikarnassosPowerStrategy($haliPlayer, $this->age, $players, $endOfAgeDiscard);
+        }
+
+        return new PlayCardStrategy($nextAge, $players, $endOfAgeDiscard);
     }
 
     public function neighbourhood(): Neighbourhood

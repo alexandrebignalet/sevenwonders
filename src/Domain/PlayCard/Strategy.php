@@ -6,6 +6,8 @@ use App\Domain\Age;
 use App\Domain\Card\CardType;
 use App\Domain\Player;
 use App\Domain\Wonder\Neighbourhood;
+use App\Domain\Wonder\WonderPowerType;
+use JetBrains\PhpStorm\Pure;
 
 abstract class Strategy
 {
@@ -58,5 +60,19 @@ abstract class Strategy
     public function discard(): array
     {
         return $this->discard;
+    }
+
+    /**
+     * @param Player[] $committedPlayers
+     * @return Player | null
+     */
+    #[Pure] protected function hasPowerToPlay(array $committedPlayers, WonderPowerType $powerType): ?Player
+    {
+        foreach ($committedPlayers as $player) {
+            if ($player->wonder->hasPowerToPlay($powerType)) {
+                return $player;
+            }
+        }
+        return null;
     }
 }

@@ -7,6 +7,7 @@ use App\Domain\Card\CardAction;
 use App\Domain\Card\CardType;
 use App\Domain\Wonder\Neighbourhood;
 use App\Domain\Wonder\Wonder;
+use JetBrains\PhpStorm\ArrayShape;
 use JetBrains\PhpStorm\Pure;
 
 class Player
@@ -51,17 +52,15 @@ class Player
     }
 
     /**
-     * @return Player
-     * @throws \Exception
+     * @return array{card: ?Card, player: Player}
      */
-    public function commit(): Player
+    #[ArrayShape(['cardAction' => "\App\Domain\Card\CardAction", 'player' => "\App\Domain\Player"])] public function commit(): array
     {
-        return new Player(
-            $this->id,
-            $this->wonder->build($this->selectedAction),
-            $this->hand->take($this->selectedAction),
-            null
-        );
+        $hand = $this->hand->take($this->selectedAction);
+        $wonder = $this->wonder->build($this->selectedAction);
+
+        $player = new Player($this->id, $wonder, $hand, null);
+        return ['cardAction' => $this->selectedAction, 'player' => $player];
     }
 
     /**
