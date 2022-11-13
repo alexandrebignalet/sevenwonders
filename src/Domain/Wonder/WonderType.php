@@ -22,10 +22,10 @@ enum WonderType
 
     #[Pure] public function stages(WonderFace $face, int $stagesBuilt = 0): Stages
     {
-        $firstBuilt = $stagesBuilt === 1;
-        $secondBuilt = $stagesBuilt === 2;
-        $thirdBuilt = $stagesBuilt === 2;
-        $forthBuilt = $stagesBuilt === 2;
+        $firstBuilt = $stagesBuilt >= 1;
+        $secondBuilt = $stagesBuilt >= 2;
+        $thirdBuilt = $stagesBuilt >= 3;
+        $forthBuilt = $stagesBuilt >= 4;
 
         switch ($this) {
             case self::RHODOS:
@@ -93,7 +93,7 @@ enum WonderType
                 } else {
                     return new Stages(
                         new Stage(resourceCost: new Resource(ore: 2), power: WonderPowerType::BUILD_FIRST_CARD_FREE->wonderPower(), isBuilt: $firstBuilt),
-                        new Stage(resourceCost: new Resource(clay: 3), power: WonderPowerType::BUILD_LAST_CARD_FREE->wonderPower(), isBuilt: $secondBuilt),
+                        new Stage(resourceCost: new Resource(clay: 3), power: WonderPowerType::BUILD_LAST_PLAYABLE_CARD_FREE->wonderPower(), isBuilt: $secondBuilt),
                         new Stage(resourceCost: new Resource(papyrus: 1, glass: 1, cloth: 1), points: 5, isBuilt: $thirdBuilt),
                     );
                 }

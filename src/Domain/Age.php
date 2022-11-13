@@ -110,6 +110,17 @@ class Age
         return array_reduce($ageOneCardsType, fn(array $acc, CardType $type) => array_merge($acc, $type->cards($playersCount)), []);
     }
 
+    public static function second(int $playersCount, bool $shuffle = true): Age
+    {
+        $cards = Age::secondAgeCards($playersCount);
+
+        if ($shuffle) {
+            shuffle($cards);
+        }
+
+        return new Age(2, $cards, $playersCount, $shuffle);
+    }
+
     /**
      * @return Card[]
      */
@@ -130,7 +141,7 @@ class Age
     public function next(): Age
     {
         if ($this->id === 1) {
-            return new Age(2, self::secondAgeCards($this->playersCount), $this->playersCount, $this->shuffle);
+            return Age::second($this->playersCount, $this->shuffle);
         }
 
         if ($this->id === 2) {

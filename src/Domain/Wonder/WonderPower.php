@@ -24,7 +24,7 @@ class WonderPower
             case WonderPowerType::SCIENCE:
             case WonderPowerType::BUILD_FREE_FIRST_COLOR:
             case WonderPowerType::BUILD_FIRST_CARD_FREE:
-            case WonderPowerType::BUILD_LAST_CARD_FREE:
+            case WonderPowerType::BUILD_LAST_PLAYABLE_CARD_FREE:
                 return false;
             case WonderPowerType::BUILD_LAST_CARD:
             case WonderPowerType::UNBURY_CARD:

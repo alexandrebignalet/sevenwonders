@@ -9,19 +9,22 @@ class Cost
 {
     public readonly int $coins;
     public readonly Resource $resource;
-    public readonly ?CardType $chain;
+    /**
+     * @var CardType[]
+     */
+    public readonly array $chain;
 
     #[Pure] public static function free(): Cost
     {
-        return new Cost(0, new Resource(), null);
+        return new Cost(0, new Resource(), []);
     }
 
-    #[Pure] public static function stoneOnly(int $stone): Cost
-    {
-        return new Cost(0, new Resource(stone: $stone), null);
-    }
-
-    public function __construct(int $coins = 0, Resource $resource = new Resource(), ?CardType $chain = null)
+    /**
+     * @param int $coins
+     * @param Resource $resource
+     * @param CardType[] $chain
+     */
+    #[Pure] public function __construct(int $coins = 0, Resource $resource = new Resource(), array $chain = [])
     {
         $this->coins = $coins;
         $this->resource = $resource;

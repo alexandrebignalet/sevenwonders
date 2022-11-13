@@ -136,7 +136,7 @@ class SevenWondersPlayCardTest extends TestCase
             ->playCard(2, CardType::PRESSE_1->value, Action::BUILD_STRUCTURE->value)
             ->playCard(3, CardType::COMPTOIR_EST->value, Action::BUILD_STRUCTURE->value)
             // second round
-            ->playCard(1, CardType::CASERNE->value, Action::BUILD_STRUCTURE->value)
+            ->playCard(1, CardType::PALISSADE->value, Action::BUILD_STRUCTURE->value)
             ->playCard(2, CardType::SCIERIE_1->value, Action::BUILD_STRUCTURE->value)
             ->playCard(3, CardType::AUTEL->value, Action::BUILD_STRUCTURE->value)
             // third round

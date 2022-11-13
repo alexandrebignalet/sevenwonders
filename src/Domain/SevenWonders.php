@@ -2,11 +2,13 @@
 
 namespace App\Domain;
 
-use App\Domain\PlayCard\PlayCardStrategy;
+use App\Domain\Card\CardType;
+use App\Domain\PlayCard\PlayCard;
 use App\Domain\PlayCard\Strategy;
 use App\Domain\Wonder\Wonder;
 use App\Domain\Wonder\WonderFace;
 use App\Domain\Wonder\WonderType;
+use JetBrains\PhpStorm\Pure;
 
 class SevenWonders
 {
@@ -33,7 +35,7 @@ class SevenWonders
             return Player::initialize($userId, $age, $wonder);
         }, $userWonders);
 
-        return new SevenWonders($roomId, new PlayCardStrategy($age, $players, []));
+        return new SevenWonders($roomId, new PlayCard($age, $players, []));
     }
 
     /**
@@ -78,17 +80,23 @@ class SevenWonders
         $this->state = $state;
     }
 
-    public function age(): Age
+    #[Pure] public function age(): Age
     {
         return $this->state->age();
     }
 
-    public function players(): array
+    /**
+     * @return Player[]
+     */
+    #[Pure] public function players(): array
     {
         return $this->state->players();
     }
 
-    public function discard(): array
+    /**
+     * @return CardType[]
+     */
+    #[Pure] public function discard(): array
     {
         return $this->state->discard();
     }

@@ -10,7 +10,6 @@ use App\Domain\GameException;
 use App\Domain\GameExceptionType;
 use App\Domain\Player;
 use App\Domain\Wonder\Neighbourhood;
-use App\Domain\Wonder\WonderPowerType;
 use JetBrains\PhpStorm\Pure;
 
 class BabylonPowerStrategy extends Strategy
@@ -33,7 +32,6 @@ class BabylonPowerStrategy extends Strategy
 
     /**
      * @throws GameException
-     * @throws \Exception
      */
     public function play(Player $player, string $cardName, string $action, ?string $tradeId): Strategy
     {
@@ -53,19 +51,21 @@ class BabylonPowerStrategy extends Strategy
             $this->discard[] = $cardAction->cardType();
         }
 
-        $nextAge = $this->age->next();
-        $players = array_map(fn(Player $player) => $player->id === $babylon->id ? $babylon : $player, $this->players);
-        $playersLastCard = array_filter(array_map(fn(Player $player) => $player->discardLastCard()['card'], $players), fn(?CardType $cardType) => $cardType !== null);
+        $playersWithBabylonUpdated = array_map(fn(Player $player) => $player->id === $babylon->id ? $babylon : $player, $this->players);
+
+        /**
+         * @var Player[] $endOfAgePlayers
+         * @var CardType[] $endOfAgeDiscard
+         */
+        list('players' => $endOfAgePlayers, 'discard' => $endOfAgeDiscard) = $this->discardEachPlayerLastCard($playersWithBabylonUpdated, $this->discard);
+
+        $halikarnassosPlay = $this->halikarnassosPowerOrNull($endOfAgePlayers, $endOfAgeDiscard);
+        if (isset($halikarnassosPlay)) {
+            return $halikarnassosPlay;
+        };
 
 
-        $haliPlayer = $this->hasPowerToPlay($players, WonderPowerType::UNBURY_CARD);
-        $endOfAgeDiscard = array_merge($this->discard, $playersLastCard);
-
-        if (isset($haliPlayer)) {
-            return new HalikarnassosPowerStrategy($haliPlayer, $this->age, $players, $endOfAgeDiscard);
-        }
-
-        return new PlayCardStrategy($nextAge, $players, $endOfAgeDiscard);
+        return $this->setupNextAge($endOfAgePlayers, $endOfAgeDiscard);
     }
 
     public function neighbourhood(): Neighbourhood

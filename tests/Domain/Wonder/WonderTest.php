@@ -3,10 +3,12 @@
 namespace App\Tests\Domain\Wonder;
 
 use App\Domain\Action;
+use App\Domain\Age;
 use App\Domain\Card\CardAction;
 use App\Domain\Card\CardType;
 use App\Domain\Card\Offer;
 use App\Domain\Card\Trade;
+use App\Domain\Player;
 use App\Domain\Resource\Resource;
 use App\Domain\Resource\Resources;
 use App\Domain\Wonder\Neighbourhood;
@@ -28,9 +30,8 @@ class WonderTest extends TestCase
         $leftNeighbour = new Wonder(
             type: $leftNeighbourWonderType,
             face: $leftNeighbourWonderFace,
-            resource: $leftNeighbourWonderType->resource(),
             coins: 3,
-            structures: new Structures(resources: Resources::single(clay: 2)),
+            structures: new Structures(CardType::BASSIN_ARGILEUX, CardType::FOSSE_ARGILEUSE),
             stages: $leftNeighbourWonderType->stages($leftNeighbourWonderFace),
         );
 
@@ -39,9 +40,8 @@ class WonderTest extends TestCase
         $rightNeighbour = new Wonder(
             type: $rightNeighbourWonderType,
             face: $rightNeighbourWonderFace,
-            resource: $rightNeighbourWonderType->resource(),
             coins: 3,
-            structures: new Structures(resources: Resources::single(wood: 1)),
+            structures: new Structures(CardType::SCIERIE_1),
             stages: $rightNeighbourWonderType->stages($rightNeighbourWonderFace),
         );
 
@@ -50,15 +50,16 @@ class WonderTest extends TestCase
         $wonder = new Wonder(
             type: $wonderType,
             face: $wonderFace,
-            resource: $wonderType->resource(),
             coins: 3,
-            structures: new Structures(resources: Resources::single(wood: 1)),
+            structures: new Structures(CardType::EXPLOITATION_FORESTIERE),
             stages: $wonderType->stages($wonderFace),
         );
 
         $neighbourhood = new Neighbourhood($leftNeighbour, $rightNeighbour);
 
-        $actions = $wonder->availableActionsFor(CardType::SCIERIE_1->card(), $neighbourhood);
+        $player = Player::initialize(1, Age::first(3), $wonder);
+
+        $actions = $player->availableActionsFor(CardType::SCIERIE_1->card(), $neighbourhood);
 
         $this->assertEquals($actions, [
             new CardAction(CardType::SCIERIE_1, Action::BUILD_STAGE, new Trade(leftNeighbourOffer: new Offer($leftNeighbour, new Resource()), rightNeighbourOffer: new Offer($rightNeighbour, new Resource(wood: 1)))),

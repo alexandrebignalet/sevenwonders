@@ -32,7 +32,7 @@ class BabylonPowerTest extends TestCase
     {
         $this->setupBabylonLastCardToPlay();
 
-        $this->assertEquals($this->game->age()->id, 1);
+        $this->assertEquals(1, $this->game->age()->id);
     }
 
     /**
@@ -44,7 +44,7 @@ class BabylonPowerTest extends TestCase
         $this->setupBabylonLastCardToPlay();
 
         $notBabylonUser = $this->game->players()[1];
-        $availableAction = $notBabylonUser->hand->availableActions($notBabylonUser->wonder, $this->game->state->neighboursOf($notBabylonUser->id))[0];
+        $availableAction = $notBabylonUser->availableActions($this->game->state->neighboursOf($notBabylonUser->id))[0];
         $this->game->playCard($notBabylonUser->id, $availableAction->cardType()->value, $availableAction->action()->value, $availableAction->trade()?->id());
     }
 
@@ -55,7 +55,7 @@ class BabylonPowerTest extends TestCase
     {
         $this->setupBabylonLastCardToPlay();
 
-        $availableAction = $this->babylon->hand->availableActions($this->babylon->wonder, $this->game->state->neighboursOf($this->babylon->id))[0];
+        $availableAction = $this->babylon->availableActions($this->game->state->neighboursOf($this->babylon->id))[0];
         $game = $this->game->playCard($this->babylon->id, $availableAction->cardType()->value, $availableAction->action()->value, $availableAction->trade()?->id());
 
         $this->assertEquals(2, $game->age()->id);
@@ -84,7 +84,7 @@ class BabylonPowerTest extends TestCase
         for ($i = 2; $i < 6; $i++) {
             foreach ($userIds as $userId) {
                 $player = $this->game->findPlayer($userId);
-                $availableAction = $player->hand->availableActions($player->wonder, $this->game->state->neighboursOf($player->id))[0];
+                $availableAction = $player->availableActions($this->game->state->neighboursOf($player->id))[0];
                 $this->game = $this->game->playCard($userId, $availableAction->cardType()->value, $availableAction->action()->value, $availableAction->trade()?->id());
             }
         }

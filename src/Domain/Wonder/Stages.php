@@ -45,4 +45,10 @@ class Stages
         }
         return false;
     }
+
+    public function isStagesBuilt(int $untilStage)
+    {
+        $stagesBuilt = array_reduce($this->values, fn($acc, Stage $stage) => $stage->isBuilt() ? $acc + 1 : $acc, 0);
+        return $stagesBuilt >= $untilStage;
+    }
 }

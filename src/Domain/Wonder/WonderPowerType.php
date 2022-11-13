@@ -12,7 +12,7 @@ enum WonderPowerType: string
     case SCIENCE = "SCIENCE";
     case BUILD_FREE_FIRST_COLOR = "BUILD_FREE_FIRST_COLOR";
     case BUILD_FIRST_CARD_FREE = "BUILD_FIRST_CARD_FREE";
-    case BUILD_LAST_CARD_FREE = "BUILD_LAST_CARD_FREE";
+    case BUILD_LAST_PLAYABLE_CARD_FREE = "BUILD_LAST_CARD_FREE";
     case UNBURY_CARD = "UNBURY_CARD";
 
     #[Pure] public function wonderPower(): WonderPower

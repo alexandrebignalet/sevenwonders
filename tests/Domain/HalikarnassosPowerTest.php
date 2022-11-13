@@ -68,7 +68,7 @@ class HalikarnassosPowerTest extends TestCase
     {
         $this->setupHaliUnburyCardToPlayAtEndOfAge();
 
-        $this->assertEquals($this->game->age()->id, 1);
+        $this->assertEquals(1, $this->game->age()->id);
     }
 
     /**
@@ -114,17 +114,18 @@ class HalikarnassosPowerTest extends TestCase
     }
 
     /**
+     * @param bool $withBabylon
      * @return void
      * @throws GameException
      */
-    private function setupHaliUnburyCardToPlayAtEndOfAge($withBabylon = false): void
+    private function setupHaliUnburyCardToPlayAtEndOfAge(bool $withBabylon = false): void
     {
         $this->game = $this->game
             // first round
             ->playCard(1, CardType::BASSIN_ARGILEUX->value, Action::BUILD_STRUCTURE->value)
             ->playCard(2, CardType::PRESSE_1->value, Action::BUILD_STRUCTURE->value)
             ->playCard($this->babylon, CardType::COMPTOIR_EST->value, Action::BUILD_STRUCTURE->value)
-            ->playCard(4, CardType::CASERNE->value, Action::BUILD_STRUCTURE->value);
+            ->playCard(4, CardType::OFFICINE->value, Action::DISCARD->value);
 
         $userIds = [1, 2, $this->babylon, 4];
         for ($i = 1; $i < 5; $i++) {
@@ -179,7 +180,7 @@ class HalikarnassosPowerTest extends TestCase
     private function autoPlayPreferringDiscardAvoidingBuildStage(int $userId): SevenWonders
     {
         $player = $this->game->findPlayer($userId);
-        $availableActions = $player->hand->availableActions($player->wonder, $this->game->state->neighboursOf($player->id));
+        $availableActions = $player->availableActions($this->game->state->neighboursOf($player->id));
         $action = array_reduce($availableActions, function ($acc, CardAction $cardAction) {
 
             if ($cardAction->action() !== Action::BUILD_STAGE) {
@@ -202,7 +203,7 @@ class HalikarnassosPowerTest extends TestCase
     private function babylonAutoPlayTargetingStage(int $userId): SevenWonders
     {
         $player = $this->game->findPlayer($userId);
-        $availableActions = $player->hand->availableActions($player->wonder, $this->game->state->neighboursOf($player->id));
+        $availableActions = $player->availableActions($this->game->state->neighboursOf($player->id));
         $cardAction = array_reduce($availableActions, function ($acc, CardAction $cardAction) {
             $action = $cardAction->action();
             $cardType = $cardAction->cardType();

@@ -8,6 +8,7 @@ use App\Domain\GameException;
 use App\Domain\GameExceptionType;
 use App\Domain\Player;
 use App\Domain\Wonder\Neighbourhood;
+use JetBrains\PhpStorm\ArrayShape;
 use JetBrains\PhpStorm\Pure;
 
 class HalikarnassosPowerStrategy extends Strategy
@@ -38,12 +39,6 @@ class HalikarnassosPowerStrategy extends Strategy
             throw GameExceptionType::CARD_PLAY_NOT_ALLOWED->exception();
         }
 
-        $nextAge = $this->age->next();
-
-        if (count($this->discard) === 0) {
-            return new PlayCardStrategy($nextAge, $this->players, $this->discard);
-        }
-
         $result = $this->unburyInDiscard($cardName);
 
         if ($result['card'] === null) {
@@ -51,9 +46,13 @@ class HalikarnassosPowerStrategy extends Strategy
         }
 
         $hali = $this->haliPlayer->unbury($result['card']);
-
         $players = array_map(fn(Player $player) => $player->id === $hali->id ? $hali : $player, $this->players);
-        return new PlayCardStrategy($nextAge, $players, $result['remaining']);
+
+        if ($this->isAgeOver($players)) {
+            return $this->setupNextAge($players, $result['remaining']);
+        } else {
+            return $this->setupNextRound($players);
+        }
     }
 
     public function neighbourhood(): Neighbourhood
@@ -62,8 +61,10 @@ class HalikarnassosPowerStrategy extends Strategy
     }
 
     /**
-     * @return array{card: CardType, remaining: CardType[]}
+     * @param string $cardName
+     * @return array{card: CardType, remaining: array<CardType>}
      */
+    #[ArrayShape(['card' => "\App\Domain\Card\CardType|null", 'remaining' => "\App\Domain\Card\CardType[]"])]
     private function unburyInDiscard(string $cardName): array
     {
         $remaining = [];

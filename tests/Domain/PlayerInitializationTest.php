@@ -45,7 +45,7 @@ class PlayerInitializationTest extends TestCase
     {
         $this->assertCount(7, $this->player->hand->cards());
         $firstAgeCardsName = array_map(fn(Card $card): CardType => $card->type, Age::first(3)->cards);
-        foreach ($this->player->hand->availableActions($this->player->wonder, $this->babylonNbh) as $cardAction) {
+        foreach ($this->player->availableActions($this->babylonNbh) as $cardAction) {
             $this->assertContains($cardAction->cardType(), $firstAgeCardsName);
         }
     }

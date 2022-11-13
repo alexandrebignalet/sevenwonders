@@ -172,20 +172,25 @@ class NeighbourhoodTest extends TestCase
         Resources $rightResources
     ): Neighbourhood
     {
+        $leftStructures = $this->createStub(Structures::class);
+        $leftStructures->method('resources')->willReturn($leftResources);
+
+        $rightStructures = $this->createStub(Structures::class);
+        $rightStructures->method('resources')->willReturn($rightResources);
+
+
         $left = new Wonder(
             WonderType::ALEXANDRIA,
             WonderFace::DAY,
-            WonderType::ALEXANDRIA->resource(),
             3,
-            new Structures($leftResources),
+            $leftStructures,
             WonderType::ALEXANDRIA->stages(WonderFace::DAY),
         );
         $right = new Wonder(
             WonderType::BABYLON,
             WonderFace::NIGHT,
-            WonderType::BABYLON->resource(),
             3,
-            new Structures($rightResources),
+            $rightStructures,
             WonderType::BABYLON->stages(WonderFace::NIGHT)
         );
         return new Neighbourhood($left, $right);

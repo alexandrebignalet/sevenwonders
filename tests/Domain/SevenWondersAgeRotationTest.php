@@ -26,12 +26,12 @@ class SevenWondersAgeRotationTest extends TestCase
             foreach ($this->userIds as $userId) {
                 $player = $game->findPlayer($userId);
                 $neighbourhood = $game->state->neighboursOf($player->id);
-                $availableActions = $player->hand->availableActions($player->wonder, $neighbourhood)[0];
+                $availableActions = $player->availableActions($neighbourhood)[0];
                 $game = $game->playCard($userId, $availableActions->cardType()->value, $availableActions->action()->value, $availableActions->trade()?->id());
             }
         }
 
-        $this->assertCount(3, $game->discard());
+        $this->assertCount(5, $game->discard());
         $this->assertEquals(2, $game->age()->id);
 
         foreach ($this->userIds as $userId) {

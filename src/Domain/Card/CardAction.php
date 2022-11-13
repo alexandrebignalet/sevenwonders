@@ -67,4 +67,9 @@ class CardAction
         $trade = $this->trade === null ? 'null' : $this->trade->toString();
         return "({$this->cardType->name};{$this->action->name};{$trade})";
     }
+
+    public function id(): string
+    {
+        return "{$this->cardType->name}_{$this->action->name}_{$this->trade?->id()}";
+    }
 }

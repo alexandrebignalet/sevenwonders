@@ -4,6 +4,8 @@ namespace App\Domain\Card;
 
 use App\Domain\Resource\Resource;
 use App\Domain\Resource\Resources;
+use App\Domain\Wonder\ResourceCard;
+use App\Domain\Wonder\WarCard;
 use JetBrains\PhpStorm\Pure;
 
 enum CardType: string
@@ -68,84 +70,97 @@ enum CardType: string
         switch ($this) {
             // AGE 2
             case self::SCIERIE_1:
-                return new Card($this, Cost::free(), new Resources(new Resource(wood: 1)));
+                return new ResourceCard($this, Cost::free(), Resources::single(wood: 1));
             case self::FILON:
-                return new Card($this, Cost::free(), new Resources(new Resource(ore: 1)));
+                return new ResourceCard($this, Cost::free(), Resources::single(ore: 1));
             case self::CARRIERE_1:
-                return new Card($this, Cost::free(), new Resources(new Resource(stone: 1)));
+                return new ResourceCard($this, Cost::free(), Resources::single(stone: 1));
             case self::BASSIN_ARGILEUX:
+                return new ResourceCard($this, new Cost(coins: 1), Resources::single(clay: 1));
+            case self::VERRERIE_2:
             case self::VERRERIE_1:
+                return new ResourceCard($this, Cost::free(), Resources::single(glass: 1));
+            case self::METIER_A_TISSER_2:
             case self::METIER_A_TISSER_1:
+                return new ResourceCard($this, Cost::free(), Resources::single(cloth: 1));
             case self::FRICHE:
+                return new ResourceCard($this, new Cost(coins: 1), new Resources(new Resource(wood: 1), new Resource(clay: 1)));
             case self::MINE:
+                return new ResourceCard($this, new Cost(coins: 1), new Resources(new Resource(ore: 1), new Resource(stone: 1)));
             case self::EXCAVATION:
-                return new Card($this, Cost::free(), Resources::single(clay: 1, stone: 1));
+                return new ResourceCard($this, new Cost(coins: 1), new Resources(new Resource(clay: 1), new Resource(stone: 1)));
             case self::FOSSE_ARGILEUSE:
+                return new ResourceCard($this, new Cost(coins: 1), new Resources(new Resource(clay: 1), new Resource(ore: 1)));
             case self::EXPLOITATION_FORESTIERE:
-                return new Card($this, new Cost(coins: 1), new Resources(new Resource(wood: 1), new Resource(stone: 1)));
+                return new ResourceCard($this, new Cost(coins: 1), new Resources(new Resource(wood: 1), new Resource(stone: 1)));
             case self::GISEMENT:
-                return new Card($this, Cost::free(), Resources::empty());
+                return new ResourceCard($this, new Cost(coins: 1), new Resources(new Resource(wood: 1), new Resource(ore: 1)));
             case self::PRESSE_2:
             case self::PRESSE_1:
-                return new Card($this, Cost::free(), Resources::single(papyrus: 1));
+                return new ResourceCard($this, Cost::free(), Resources::single(papyrus: 1));
             case self::TOUR_DE_GARDE:
+                return new WarCard($this, new Cost(resource: new Resource(clay: 1)), 1);
             case self::CASERNE:
+                return new WarCard($this, new Cost(resource: new Resource(ore: 1)), 1);
             case self::PALISSADE:
+                return new WarCard($this, new Cost(resource: new Resource(wood: 1)), 1);
             case self::COMPTOIR_OUEST:
             case self::COMPTOIR_EST:
+            case self::BAZAR:
+            case self::VIGNOBLE:
             case self::TAVERNE:
             case self::MARCHE:
+                return new TradeCard($this, Cost::free());
             case self::OFFICINE:
-            case self::SCRIPTORIUM:
-            case self::ATELIER:
+                return new ScienceCard($this, new Cost(resource: new Resource(cloth: 1)), ScienceSymbol::COMPASS);
             case self::THEATRE:
             case self::AUTEL:
-            case self::VIGNOBLE:
-            case self::BAZAR:
             case self::PRETEUR_SUR_GAGE:
-                return new Card($this, Cost::free());
+                return new CivilianCard($this, Cost::free(), 3);
+            case self::SCRIPTORIUM:
+                return new ScienceCard($this, new Cost(resource: new Resource(papyrus: 1)), ScienceSymbol::TABLE);
+            case self::ATELIER:
+                return new ScienceCard($this, new Cost(resource: new Resource(glass: 1)), ScienceSymbol::WHEEL);
             case self::BAINS:
-                return new Card($this, Cost::stoneOnly(1));
+                return new CivilianCard($this, new Cost(resource: new Resource(stone: 1)), 3);
 
             // AGE 2
             case self::SCIERIE_2:
-                return new Card($this, new Cost(coins: 1), Resources::single(wood: 2));
+                return new ResourceCard($this, new Cost(coins: 1), Resources::single(wood: 2));
             case self::CARRIERE_2:
-                return new Card($this, new Cost(coins: 1), Resources::single(stone: 2));
+                return new ResourceCard($this, new Cost(coins: 1), Resources::single(stone: 2));
             case self::BRIQUETERIE:
-                return new Card($this, new Cost(coins: 1), Resources::single(clay: 2));
+                return new ResourceCard($this, new Cost(coins: 1), Resources::single(clay: 2));
             case self::FONDERIE:
-                return new Card($this, new Cost(coins: 1), Resources::single(ore: 2));
-            case self::VERRERIE_2:
-                return new Card($this, Cost::free(), Resources::single(glass: 1));
-            case self::METIER_A_TISSER_2:
-                return new Card($this, Cost::free(), Resources::single(cloth: 1));
+                return new ResourceCard($this, new Cost(coins: 1), Resources::single(ore: 2));
             case self::PLACE_D_ARMES:
+                return new WarCard($this, new Cost(resource: new Resource(ore: 2, wood: 1)), 2);
             case self::STATUE:
-                return new Card($this, new Cost(resource: new Resource(ore: 2, wood: 1)));
+                return new CivilianCard($this, new Cost(resource: new Resource(ore: 2, wood: 1), chain: [CardType::PRETEUR_SUR_GAGE]), 4);
             case self::MURAILLE:
+                return new WarCard($this, new Cost(resource: new Resource(stone: 3)), 2);
             case self::AQUEDUC:
-                return new Card($this, new Cost(resource: new Resource(stone: 3)));
+                return new CivilianCard($this, new Cost(resource: new Resource(stone: 3), chain: [CardType::BAINS]), 5);
             case self::TEMPLE:
-                return new Card($this, new Cost(resource: new Resource(clay: 1, wood: 1, glass: 1)));
+                return new CivilianCard($this, new Cost(resource: new Resource(clay: 1, wood: 1, glass: 1)), 4);
             case self::TRIBUNAL:
-                return new Card($this, new Cost(resource: new Resource(clay: 2, cloth: 1)));
+                return new CivilianCard($this, new Cost(resource: new Resource(clay: 2, cloth: 1), chain: [CardType::SCRIPTORIUM]), 4);
             case self::CARAVANSERAIL:
-                return new Card($this, new Cost(resource: new Resource(wood: 2)));
+                return new TradeCard($this, new Cost(resource: new Resource(wood: 2), chain: [CardType::MARCHE]));
             case self::FORUM:
-                return new Card($this, new Cost(resource: new Resource(clay: 2)));
+                return new TradeCard($this, new Cost(resource: new Resource(clay: 2), chain: [CardType::COMPTOIR_OUEST, CardType::COMPTOIR_EST]));
             case self::ECURIES:
-                return new Card($this, new Cost(resource: new Resource(clay: 1, ore: 1, wood: 1)));
+                return new WarCard($this, new Cost(resource: new Resource(clay: 1, ore: 1, wood: 1), chain: [CardType::OFFICINE]), 2);
             case self::CHAMPS_DE_TIR:
-                return new Card($this, new Cost(resource: new Resource(ore: 1, wood: 2)));
+                return new WarCard($this, new Cost(resource: new Resource(ore: 1, wood: 2), chain: [CardType::ATELIER]), 2);
             case self::DISPENSAIRE:
-                return new Card($this, new Cost(resource: new Resource(ore: 2, glass: 1)));
+                return new ScienceCard($this, new Cost(resource: new Resource(ore: 2, glass: 1), chain: [CardType::OFFICINE]), ScienceSymbol::COMPASS);
             case self::LABORATOIRE:
-                return new Card($this, new Cost(resource: new Resource(clay: 2, papyrus: 1)));
+                return new ScienceCard($this, new Cost(resource: new Resource(clay: 2, papyrus: 1), chain: [CardType::ATELIER]), ScienceSymbol::WHEEL);
             case self::BIBLIOTHEQUE:
-                return new Card($this, new Cost(resource: new Resource(stone: 2, cloth: 1)));
+                return new ScienceCard($this, new Cost(resource: new Resource(stone: 2, cloth: 1), chain: [CardType::SCRIPTORIUM]), ScienceSymbol::TABLE);
             case self::ECOLE:
-                return new Card($this, new Cost(resource: new Resource(wood: 1, papyrus: 1)));
+                return new ScienceCard($this, new Cost(resource: new Resource(wood: 1, papyrus: 1)), ScienceSymbol::TABLE);
         }
     }
 
